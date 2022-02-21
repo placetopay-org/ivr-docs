@@ -1,0 +1,19 @@
+{
+  "items": [
+    {
+      "type": "item",
+      "title": "Flujo de integracion",
+      "uri": "docs/readme.md"
+    },
+    {
+      "type": "item",
+      "title": "Autenticación",
+      "uri": "docs/authentication.md"
+    },
+    {
+      "type": "item",
+      "title": "API",
+      "uri": "reference/ivr-api.yaml"
+    }
+  ]
+}

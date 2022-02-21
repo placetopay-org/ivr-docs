@@ -1,0 +1,848 @@
+openapi: 3.1.0
+info:
+  title: IVR API
+  version: '1.0'
+  description: |-
+    Este servicio web y su arquitectura permite a cualquier aplicación conectarse a Placetopay para procesar transacciones, independiente del lenguaje de desarrollo.
+
+    El comercio que desee utilizar los servicios debe de generar un servicio de consulta y asentamiento para poder obtener y actualizar la información de las ordenes.
+
+    A continuación se describirán cada uno de los usos y los datos requeridos en la trama para cada uno de los casos. La respuesta para cada operación está unificada en un solo tipo de trama resultante.
+
+    Por defecto el lenguaje de las respuestas es en español, si se desea cambiar es necesario enviar el parámetro `locale` en las peticiones.
+  contact:
+    name: Fredy Mendivelso
+    email: desarrollo@evertecinc.com
+  license:
+    name: Private
+servers:
+  - url: 'https://url-test.com'
+    description: URL de pruebas
+paths:
+  /query:
+    parameters: []
+    post:
+      summary: Obtener Información
+      operationId: post-query
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    $ref: '#/components/schemas/Status'
+                  payment:
+                    $ref: '#/components/schemas/Payment'
+                  payer:
+                    $ref: '#/components/schemas/Person'
+                  buyer:
+                    $ref: '#/components/schemas/Person'
+                  additional:
+                    type: object
+                    description: Objeto dinámico clave valor de información que se desee guardar con la transacción
+              examples:
+                Simple:
+                  value:
+                    status:
+                      status: OK
+                      reason: PC
+                      message: La petición se ha procesado correctamente
+                      date: '2021-11-30T15:08:27-05:00'
+                    payment:
+                      reference: TEST_1234
+                      description: Esta en mi orden de prueba
+                      amount:
+                        currency: COP
+                        total: 16
+                    payer:
+                      document: '19808512'
+                      documentType: CC
+                      name: John
+                      surname: Doe
+                      email: john@doe.com
+                      mobile: '3112343434'
+                Full:
+                  value:
+                    status:
+                      status: OK
+                      reason: PC
+                      message: La petición se ha procesado correctamente
+                      date: '2021-11-30T15:08:27-05:00'
+                    payment:
+                      reference: TEST_1234
+                      description: Esta en mi orden de prueba
+                      amount:
+                        currency: COP
+                        total: 16
+                        taxes:
+                          - kind: valueAddedTax
+                            amount: 2
+                            base: 10
+                        details:
+                          - kind: shipping
+                            amount: 4
+                      shipping:
+                        document: '19808512'
+                        documentType: CC
+                        name: John
+                        surname: Doe
+                        company: Google
+                        email: john@doe.com
+                        mobile: '3112343434'
+                        address:
+                          street: CR 45
+                          city: Medellin
+                          state: Antioquia
+                          postalCode: '400001'
+                          country: Colombia
+                          phone: '0344565676'
+                    payer:
+                      document: '19808512'
+                      documentType: CC
+                      name: John
+                      surname: Doe
+                      company: Google
+                      email: john@doe.com
+                      mobile: '3112343434'
+                      address:
+                        street: CR 45
+                        city: Medellin
+                        state: Antioquia
+                        postalCode: '400001'
+                        country: Colombia
+                        phone: '0344565676'
+                    buyer:
+                      document: '19808512'
+                      documentType: CC
+                      name: John
+                      surname: Doe
+                      company: Google
+                      email: john@doe.com
+                      mobile: '3112343434'
+                      address:
+                        street: CR 45
+                        city: Medellin
+                        state: Antioquia
+                        postalCode: '400001'
+                        country: Colombia
+                        phone: '0344565676'
+                    additional:
+                      some_key: Value to be stored
+                      another_key: Another value to be stored
+          headers: {}
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    $ref: '#/components/schemas/Status'
+                  message:
+                    type: string
+                    description: Mensaje de error por parte del servicio.
+                    minLength: 1
+                    example: Algo malo paso.
+              examples:
+                Error controlado:
+                  value:
+                    status:
+                      status: FAILED
+                      reason: PC
+                      message: Petición inválida.
+                      date: '2021-11-30T15:08:27-05:00'
+                    message: Algo malo paso.
+      description: Servicio que debe de generar el comercio y que permite realizar una búsqueda sobre la base de datos del comercio para obtener un pendiente de pago.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              description: ''
+              type: object
+              x-examples:
+                example-1:
+                  auth:
+                    login: 6dd490faf9cb87a9862245da41170ff2
+                    tranKey: JUfKi8+W//kX43WZd8FcnNsdl7zkaeAQdmSOudWcVi0=
+                    nonce: MzgwYWYwMjc2ZWUzODA5YmI1MDQ1YmNjYzdlNzY1MTY=
+                    seed: '2021-03-02T17:03:50+01:00'
+                  reference: 230364
+              properties:
+                auth:
+                  $ref: '#/components/schemas/Autentication'
+                reference:
+                  type: string
+                  description: Referencia de la orden definida en la plataforma del comercio.
+                  example: '123456'
+                  minLength: 1
+              required:
+                - auth
+                - reference
+            examples:
+              Obtener información:
+                value:
+                  auth:
+                    login: c51ce410c124a10e0db5e4b97fc2af39
+                    tranKey: VQOcRcVH2DfL6Y4B4SaK6yhoH/VOUveZ3xT16OQnvxE=
+                    nonce: NjE0OWVkODgwYjNhNw==
+                    seed: '2021-09-21T09:34:48-05:00'
+                  reference: '123456'
+        description: ''
+  /api/notify:
+    post:
+      summary: Notificar pago
+      operationId: post-api-notify
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    $ref: '#/components/schemas/Status'
+              examples:
+                Example:
+                  value:
+                    status:
+                      status: OK
+                      reason: null
+                      message: null
+                      date: '2019-08-24T14:15:22Z'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    $ref: '#/components/schemas/Status'
+              examples:
+                Example:
+                  value:
+                    status:
+                      status: FAILED
+                      reason: '00'
+                      message: Firma inválida.
+                      date: '2019-08-24T14:15:22Z'
+      description: Servicio que debe de generar el comercio y que permite solicitar el cambio de estado de una transacción que se encuentre en estado pendiente.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  $ref: '#/components/schemas/Status'
+                sessionId:
+                  type: string
+                  description: Identificador de la transacción que se encuentra en el listado de transacciones del IVR.
+                  example: '1'
+                  minLength: 1
+                reference:
+                  type: string
+                  description: Referencia del pago
+                  example: '123'
+                  minLength: 1
+                signature:
+                  type: string
+                  description: Firma de la transacción almacenada en core
+                  example: 3ccbae73d6a5bb1be7e00f9a2cfc3cc7cd95a311
+                  minLength: 1
+              required:
+                - status
+                - sessionId
+                - reference
+                - signature
+            examples: {}
+  /v1/transaction/query:
+    post:
+      summary: Consulta de transacción
+      operationId: post-v1-transaction-query
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    $ref: '#/components/schemas/Status'
+                  payment:
+                    $ref: '#/components/schemas/Transaction'
+              examples:
+                Example:
+                  value:
+                    status:
+                      status: APPROVED
+                      reason: '00'
+                      message: La petición ha sido aprobada exitosamente
+                      date: '2019-08-24T14:15:22Z'
+                    payment:
+                      agreement: '0'
+                      agreementType: test
+                      amount:
+                        from:
+                          currency: COP
+                          total: 10
+                        to:
+                          currency: COP
+                          total: 10
+                        factor: '1'
+                      authorization: '000000'
+                      franchise: DF_VS
+                      internalReference: '123'
+                      issuerName: 'JPMORGAN CHASE BANK, N.A.'
+                      paymentMethod: visa
+                      paymentMethodName: Visa
+                      receipt: '241516'
+                      reference: '1122334455'
+                      refunded: false
+                      status:
+                        status: APPROVED
+                        reason: '00'
+                        message: Aprobada
+                        date: '2019-08-24T14:15:22Z'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    $ref: '#/components/schemas/Status'
+              examples:
+                Example:
+                  value:
+                    status:
+                      status: FAILED
+                      reason: '01'
+                      message: Petición invalida
+                      date: '2019-08-24T14:15:22Z'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    $ref: '#/components/schemas/Status'
+              examples:
+                Example:
+                  value:
+                    status:
+                      status: FAILED
+                      reason: '00'
+                      message: login o tranKey invalidos
+                      date: '2019-08-24T14:15:22Z'
+      description: Servicio expuesto por el IVR para permitir al comercio consultar el estado de la transacción.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                auth:
+                  $ref: '#/components/schemas/Autentication'
+                reference:
+                  type: string
+                  minLength: 1
+                  example: '1122334455'
+            examples:
+              Example:
+                value:
+                  auth:
+                    login: c51ce410c124a10e0db5e4b97fc2af39
+                    tranKey: VQOcRcVH2DfL6Y4B4SaK6yhoH/VOUveZ3xT16OQnvxE=
+                    nonce: NjE0OWVkODgwYjNhNw==
+                    seed: '2021-09-21T09:34:48-05:00'
+                  payment:
+                    agreement: '0'
+                    agreementType: test
+                    amount:
+                      from:
+                        currency: COP
+                        total: 10
+                      to:
+                        currency: COP
+                        total: 10
+                      factor: '1'
+                    authorization: '000000'
+                    franchise: DF_VS
+                    internalReference: '123'
+                    issuerName: 'JPMORGAN CHASE BANK, N.A.'
+                    paymentMethod: visa
+                    paymentMethodName: Visa
+                    receipt: '241516'
+                    reference: '1122334455'
+                    refunded: false
+                    status:
+                      status: APPROVED
+                      reason: '00'
+                      message: Se ha aprobado su pago
+                      date: '2019-08-24T14:15:22Z'
+components:
+  schemas:
+    Autentication:
+      title: Autentication
+      type: object
+      description: Estructura que contiene la información de autenticación del sitio generada de acuerdo al WSSE UsernameToken Profile 1.1
+      properties:
+        login:
+          type: string
+          minLength: 1
+          description: Identificador del sitio.
+          example: c51ce410c124a10e0db5e4b97fc2af39
+        tranKey:
+          type: string
+          description: 'Llave transaccional, que está formada por la siguiente operación: Base64(SHA-1(nonce + seed + secretkey)). El nonce dentro de la operación es el original, es decir, el que no está en Base64.'
+          minLength: 1
+          example: VQOcRcVH2DfL6Y4B4SaK6yhoH/VOUveZ3xT16OQnvxE=
+        nonce:
+          type: string
+          minLength: 1
+          description: Valor aleatorio para cada solicitud codificado en Base64.
+          example: NjE0OWVkODgwYjNhNw==
+        seed:
+          type: string
+          example: '2021-09-21T09:34:48-05:00'
+          minLength: 1
+          description: 'Fecha actual, la cual se genera en formato ISO 8601.'
+      required:
+        - login
+        - tranKey
+        - nonce
+        - seed
+      examples:
+        - login: c51ce410c124a10e0db5e4b97fc2af39
+          tranKey: VQOcRcVH2DfL6Y4B4SaK6yhoH/VOUveZ3xT16OQnvxE=
+          nonce: NjE0OWVkODgwYjNhNw==
+          seed: '2021-09-21T09:34:48-05:00'
+    Person:
+      title: Person
+      type: object
+      description: Estructura que refleja la información de una persona involucrada en una transacción.
+      examples:
+        - document: '19808512'
+          documentType: CC
+          name: John
+          surname: Doe
+          company: Google
+          email: john@doe.com
+          mobile: '3112343434'
+          address:
+            street: CR 45
+            city: Medellin
+            state: Antioquia
+            postalCode: '400001'
+            country: Colombia
+            phone: '0344565676'
+      properties:
+        document:
+          type: string
+          description: Documento de la persona
+          minLength: 1
+          example: '19808512'
+        documentType:
+          type: string
+          minLength: 1
+          maxLength: 2
+          example: CC
+          description: Tipo de documento de la persona
+        name:
+          type: string
+          example: John
+          minLength: 1
+          description: Nombre de la persona
+        surname:
+          type: string
+          description: Apellido de la persona
+          minLength: 1
+          example: Doe
+        company:
+          type: string
+          description: Compañia de la persona
+          minLength: 1
+          example: Google
+        email:
+          type: string
+          minLength: 1
+          example: john@doe.com
+          description: Correo electronico de la persona
+        mobile:
+          type: string
+          description: Telefono de la persona
+          minLength: 1
+          example: '3112343434'
+        address:
+          $ref: '#/components/schemas/Address'
+    Address:
+      title: Address
+      type: object
+      description: Estructura que contiene la información sobre una dirección física
+      properties:
+        street:
+          type: string
+          minLength: 1
+          example: CR 45
+          description: Dirección donde vive la persona
+        city:
+          type: string
+          description: Ciudad donde vive la persona
+          example: Medellin
+          minLength: 1
+        state:
+          type: string
+          example: Antioquia
+          minLength: 1
+          description: Estado/Departamento donde vive la persona
+        postalCode:
+          type: string
+          description: Codigo postal de la localidad donde vive la persona
+          example: '400001'
+          minLength: 1
+        country:
+          type: string
+          description: Pais donde vive la persona
+          example: Colombia
+          minLength: 1
+        phone:
+          type: string
+          description: Telefono de donde vive la persona
+          minLength: 1
+          example: '0344565676'
+      examples:
+        - street: CR 45
+          city: Medellin
+          state: Antioquia
+          postalCode: '400001'
+          country: Colombia
+          phone: '0344565676'
+    TaxDetail:
+      title: TaxDetail
+      type: object
+      description: Estructura para almacenar información sobre un impuesto.
+      examples:
+        - kind: valueAddedTax
+          amount: 2
+          base: 10
+      properties:
+        kind:
+          type: string
+          description: Tipo de impuesto reportado
+          enum:
+            - valueAddedTax
+            - exciseDuty
+            - ice
+            - airportTax
+            - stateTax
+            - municipalTax
+            - reducedStateTax
+          example: valueAddedTax
+          minLength: 1
+        amount:
+          type: number
+          example: 2
+          minimum: 1
+          description: Monto del impuesto
+        base:
+          type: number
+          description: Base imponible del impuesto
+          minimum: 1
+          example: 10
+    AmountDetail:
+      title: AmountDetail
+      type: object
+      description: Estructura para almacenar información sobre un valor adicional.
+      examples:
+        - kind: shipping
+          amount: 4
+      properties:
+        kind:
+          type: string
+          description: Tipo del valor a enviar
+          example: shipping
+          minLength: 1
+        amount:
+          type: number
+          description: Monto del valor a enviar
+          minimum: 1
+          example: 4
+    Amount:
+      title: Amount
+      type: object
+      description: Estructura que contiene la información acerca del pago de la transacción requerida al servicio web
+      examples:
+        - currency: COP
+          total: 16
+          taxes:
+            - kind: valueAddedTax
+              amount: 2
+              base: 10
+          details:
+            - kind: shipping
+              amount: 4
+      properties:
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+          enum:
+            - USD
+            - COP
+            - CRC
+            - EUR
+            - CAD
+            - AUD
+            - GBP
+            - MXN
+            - CLP
+          example: COP
+          description: Tipo de moneda utilizada en la transacción
+        total:
+          type: number
+          description: Total de la transacción
+          minimum: 1
+          example: 16
+        taxes:
+          type: array
+          description: Impuestos de la transacción
+          items:
+            $ref: '#/components/schemas/TaxDetail'
+        details:
+          type: array
+          description: Otros valores a enviar en la petición
+          items:
+            $ref: '#/components/schemas/AmountDetail'
+    Payment:
+      title: Payment
+      type: object
+      description: Estructura que contiene la información acerca del pago de la transacción requerida al servicio web
+      properties:
+        reference:
+          type: string
+          minLength: 1
+          maxLength: 32
+          description: Única referencia para la solicitud de pago.
+          example: TEST_1234
+        description:
+          type: string
+          description: Descripción de la cuenta.
+          minLength: 1
+          maxLength: 250
+          example: Esta en mi orden de prueba
+        amount:
+          $ref: '#/components/schemas/Amount'
+        shipping:
+          $ref: '#/components/schemas/Person'
+      examples:
+        - reference: TEST_1234
+          description: Esta en mi orden de prueba
+          amount:
+            currency: COP
+            total: 16
+            taxes:
+              - kind: valueAddedTax
+                amount: 2
+                base: 10
+            details:
+              - kind: shipping
+                amount: 4
+          shipping:
+            document: '19808512'
+            documentType: CC
+            name: John
+            surname: Doe
+            company: Google
+            email: john@doe.com
+            mobile: '3112343434'
+            address:
+              street: CR 45
+              city: Medellin
+              state: Antioquia
+              postalCode: '400001'
+              country: Colombia
+              phone: '0344565676'
+    Status:
+      title: Status
+      type: object
+      description: 'Estructura que contiene la información de la respuesta sobre una solicitud o pago, e informa el estado actual de la misma.'
+      properties:
+        status:
+          type: string
+          description: Estado de una petición o pago
+          minLength: 1
+          example: APPROVED
+        reason:
+          type: string
+          description: Código del motivo proporcionado.
+          minLength: 1
+          example: '00'
+        message:
+          type: string
+          description: Descripción del código de razón.
+          minLength: 1
+          example: Se ha aprobado su pago
+        date:
+          type: string
+          description: Fecha y hora en que se genera el estado de pago.
+          format: date-time
+          minLength: 1
+          example: '2019-08-24T14:15:22Z'
+      examples:
+        - status: APPROVED
+          reason: '00'
+          message: Se ha aprobado su pago
+          date: '2019-08-24T14:15:22Z'
+    Transaction:
+      title: Transaction
+      type: object
+      description: Estructura que contiene información sobre el proceso de pago de la transacción en PlacetoPay.
+      examples:
+        - agreement: '0'
+          agreementType: test
+          amount:
+            from:
+              currency: COP
+              total: 10
+            to:
+              currency: COP
+              total: 10
+            factor: '1'
+          authorization: '000000'
+          franchise: DF_VS
+          internalReference: '123'
+          issuerName: 'JPMORGAN CHASE BANK, N.A.'
+          paymentMethod: visa
+          paymentMethodName: Visa
+          receipt: '241516'
+          reference: '1122334455'
+          refunded: false
+          status:
+            status: APPROVED
+            reason: '00'
+            message: Se ha aprobado su pago
+            date: '2019-08-24T14:15:22Z'
+      properties:
+        agreement:
+          type:
+            - string
+            - number
+            - 'null'
+            - integer
+          description: |
+            Identificador de destinatario de la transacción. Para el sitio principal de la transacción.
+          example: '0'
+          minLength: 1
+        agreementType:
+          type:
+            - string
+            - 'null'
+          description: |
+            Valores: AIRLINE MERCHANT
+          minLength: 1
+          example: test
+          enum:
+            - AIRLINE
+            - MERCHANT
+        amount:
+          $ref: '#/components/schemas/AmountConversion'
+        authorization:
+          type: string
+          description: Código de autorización.
+          minLength: 1
+          example: '000000'
+        franchise:
+          type: string
+          description: Franquicia de la tarjeta utilizada.
+          minLength: 1
+          example: DF_VS
+        internalReference:
+          type: string
+          description: |
+            Referencia interna en PlacetoPay.
+          example: '123'
+          minLength: 1
+        issuerName:
+          type: string
+          description: |
+            Nombre del emisor o del procesador.
+          example: 'JPMORGAN CHASE BANK, N.A.'
+          minLength: 1
+        paymentMethod:
+          type: string
+          description: |
+            Código del método de pago utilizado.
+          example: visa
+          minLength: 1
+        paymentMethodName:
+          type: string
+          description: |
+            Nombre del método de pago utilizado.
+          example: Visa
+          minLength: 1
+        receipt:
+          type: string
+          description: |
+            Numero de recibo de la transacción.
+          minLength: 1
+          example: '241516'
+        reference:
+          type: string
+          description: |
+            Referencia enviada por el comercio para la transacción.
+          example: '1122334455'
+          minLength: 1
+        refunded:
+          type: boolean
+          default: false
+        status:
+          $ref: '#/components/schemas/Status'
+    AmountConversion:
+      title: AmountConversion
+      type: object
+      properties:
+        from:
+          $ref: '#/components/schemas/AmountBase'
+        to:
+          $ref: '#/components/schemas/AmountBase'
+        factor:
+          type: string
+          example: '1'
+          minLength: 1
+      description: Estructura para definir el factor de conversión y los valores.
+      examples:
+        - from:
+            currency: COP
+            total: 10
+          to:
+            currency: COP
+            total: 10
+          factor: '1'
+    AmountBase:
+      title: AmountBase
+      type: object
+      description: Estructura que representa una cantidad que define la moneda y el total.
+      properties:
+        currency:
+          type: string
+          description: Moneda acorde al ISO 4217 (alphabetic code).
+          minLength: 1
+          example: COP
+        total:
+          type: number
+          description: Valor total.
+          example: 10
+          minimum: 1
+      examples:
+        - currency: COP
+          total: 10
