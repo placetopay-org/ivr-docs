@@ -12,6 +12,11 @@
     },
     {
       "type": "item",
+      "title": "Flujo de notificación",
+      "uri": "docs/flow.md"
+    },
+    {
+      "type": "item",
       "title": "API",
       "uri": "reference/ivr-api.yaml"
     }
