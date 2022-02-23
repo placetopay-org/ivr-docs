@@ -1,5 +1,3 @@
-<div style="text-align: justify">
-
 # Autenticación
 
 La API de Webcheckout PlacetoPay utiliza *Web Services Security UsernameToken Profile 1.1* para autenticar todas las solicitudes.
@@ -74,5 +72,3 @@ class Authentication
 
 $auth = Authentication::generate('YOUR_LOGIN', 'YOUR_TRANKEY');
 ```
-
-</div>

@@ -1,5 +1,3 @@
-<div style="text-align: justify">
-
 # Integración con IVR
 Este documento tiene como objetivo indicar las estructuras de notificación y consulta de información de las transacciones que se generan en la plataforma de IVR.
 
@@ -16,4 +14,3 @@ Este Webservice está diseñado para ser consumido por los comercios que estén 
 
 ## ¿Cómo funciona?
 Se realizan consumos individuales a cada uno de los endpoints de acuerdo con la necesidad.
-</div>
